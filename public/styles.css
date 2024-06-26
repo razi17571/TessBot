@@ -1,0 +1,127 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1f1f1f; 
+    color: #ddd; 
+    line-height: 1.6;
+    margin: 0;
+}
+
+header {
+    background-color: #333; 
+    padding: 10px 0;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+}
+
+.brand-name {
+    font-size: 1.2rem;
+    margin-left: 10px;
+}
+
+.logo {
+    font-size: 2rem;
+}
+
+
+.access-token input{
+    margin-top: 0.5rem;
+    width: 100%;
+    font-size: 1rem;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background-color: #444; 
+    color: #ddd; 
+}
+
+
+.access-token input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #6c63ff; 
+}
+
+.note{
+    text-align: center;
+}
+
+.unit-input label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.unit-input input {
+    margin-bottom: 1rem;
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background-color: #444;
+    color: #ddd;
+}
+
+.unit-input input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #6c63ff;
+}
+
+main {
+    max-width: 960px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #333; 
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form {
+    display: grid;
+    gap: 10px;
+}
+
+label {
+    font-size: 1rem;
+    display: block;
+}
+
+select, button {
+    font-size: 1rem;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background-color: #444; 
+    color: #ddd; 
+}
+
+select:focus, button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #6c63ff;
+}
+
+button {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #6c63ff;
+    color: #fff; 
+}

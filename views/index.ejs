@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖TessBot</title>
+    <link rel="stylesheet" href="/styles.css"> <!-- Adjusted URL for stylesheet -->
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="brand">
+                <span class="logo">🤖</span>
+                <span class="brand-name"><b>TessBot</b></span>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <form id="tessbot-form">
+            <div class="access-token">
+                <label for="access-token">Access Token:</label>
+                <input type="text" id="access-token" name="access-token" placeholder="Bearer XXXXXXXXXXX" required>
+            </div>
+            <div class="unit-input">
+                <label for="unit-id">Unit ID:</label>
+                <input type="text" id="unit-id" name="unit-id" placeholder="Enter Space Separated Values" required>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+        <div class="logs">
+            <!-- Logs will be inserted here dynamically -->
+        </div>
+    </main>
+    <script src="/script.js"></script> <!-- Adjusted URL for JavaScript -->
+</body>
+</html>
