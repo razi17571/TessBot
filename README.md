@@ -2,7 +2,7 @@
 
 This repository contains steps to use TessBot.
 
-<video src='[https://youtu.be/sFwg-QyoXdI](https://youtu.be/sFwg-QyoXdI)' width=180/>
+<video src='https://youtu.be/sFwg-QyoXdI' width=180/>
 
 ## Installation
 1. Clone the repository:
