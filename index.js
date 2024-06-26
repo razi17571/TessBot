@@ -173,7 +173,6 @@ app.post('/', async (req, res) => {
 
             for (const topic of topics) {
                 console.log(`${topic.topicId}: ${topic.topicName}`);
-                console.log(''); 
             }
 
             for (const topic of topics) {
