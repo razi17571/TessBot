@@ -3,8 +3,9 @@ const axios = require('axios');
 const path = require("path");
 const engine = require('ejs-mate');
 
+
 const app = express();
-const port = 3000; 
+const port = 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -14,63 +15,58 @@ app.engine('ejs', engine);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "/views"));
 
-let ACCESS_TOKEN = process.env.ACCESS_TOKEN;
-let logs = [];
+app.get('/', (req, res) => {
+    res.render("index.ejs");
+});
 
-
-
-async function getScore(quizId) {
-    const url = `https://api.tesseractonline.com/quizattempts/submit-quiz`;
-
+async function getScore(quizId, accessToken) {
+    const url = 'https://api.tesseractonline.com/quizattempts/submit-quiz';
     const headers = {
-        'Accept': 'application/json, text/plain, /',
+        'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        'Authorization': ACCESS_TOKEN,
+        'Authorization': accessToken,
         'Origin': 'https://tesseractonline.com',
         'Referer': 'https://tesseractonline.com/',
     };
-
     const payload = { quizId };
 
     try {
         const response = await axios.post(url, payload, { headers });
-        return response.data.payload.score; 
+        return response.data.payload.score;
     } catch (error) {
         console.error(`Error submitting quiz ${quizId}:`, error);
         throw error;
     }
 }
 
-async function attemptQuizApi(quizId, questionId, userAnswer) {
-    const url = `https://api.tesseractonline.com/quizquestionattempts/save-user-quiz-answer`;
-
+async function attemptQuizApi(quizId, questionId, userAnswer, accessToken) {
+    const url = 'https://api.tesseractonline.com/quizquestionattempts/save-user-quiz-answer';
     const headers = {
-        'Accept': 'application/json, text/plain, /',
+        'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        'Authorization': ACCESS_TOKEN,
+        'Authorization': accessToken,
         'Origin': 'https://tesseractonline.com',
         'Referer': 'https://tesseractonline.com/',
     };
-
     const payload = { quizId, questionId, userAnswer };
 
     try {
         const response = await axios.post(url, payload, { headers });
-        return await getScore(quizId);
+        return await getScore(quizId, accessToken);
     } catch (error) {
         console.error(`Error attempting quiz ${quizId}, question ${questionId}:`, error);
         throw error;
     }
 }
 
-async function attemptQuiz(quizId, questionId, currentScore) {
+async function attemptQuiz(quizId, questionId, currentScore, accessToken) {
     let score = currentScore;
     const options = ['a', 'b', 'c', 'd'];
     let i = 0;
-    console.log(score, currentScore);
+
     while (score !== currentScore + 1) {
         try {
-            score = await attemptQuizApi(quizId, questionId, options[i]);
+            score = await attemptQuizApi(quizId, questionId, options[i], accessToken);
             if (score === currentScore + 1) {
                 console.log(`Option ${options[i]} locked for question ${questionId}`);
             }
@@ -84,13 +80,12 @@ async function attemptQuiz(quizId, questionId, currentScore) {
     return score;
 }
 
-async function attemptOneQuiz(quizId) {
+async function attemptOneQuiz(quizId, accessToken) {
     const url = `https://api.tesseractonline.com/quizattempts/create-quiz/${quizId}`;
-
     const headers = {
-        'Accept': 'application/json, text/plain, /',
+        'Accept': 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
-        'Authorization': ACCESS_TOKEN,
+        'Authorization': accessToken,
         'Origin': 'https://tesseractonline.com',
         'Referer': 'https://tesseractonline.com/',
     };
@@ -98,10 +93,10 @@ async function attemptOneQuiz(quizId) {
     try {
         const response = await axios.get(url, { headers });
         const data = response.data;
-        quiz_Id = data.payload.quizId;
         let currentScore = 0;
+
         for (const question of data.payload.questions) {
-            currentScore = await attemptQuiz(quiz_Id, question.questionId, currentScore);
+            currentScore = await attemptQuiz(data.payload.quizId, question.questionId, currentScore, accessToken);
         }
 
         return { quizId: data.payload.quizId, finalScore: currentScore };
@@ -111,11 +106,10 @@ async function attemptOneQuiz(quizId) {
     }
 }
 
-async function getUnitTopics(unitId) {
+async function getUnitTopics(unitId, accessToken) {
     const url = `https://api.tesseractonline.com/studentmaster/get-topics-unit/${unitId}`;
-
     const headers = {
-        'Authorization': ACCESS_TOKEN,
+        'Authorization': accessToken,
         'Host': 'api.tesseractonline.com',
     };
 
@@ -123,21 +117,22 @@ async function getUnitTopics(unitId) {
         const response = await axios.get(url, { headers });
         const data = response.data;
 
-        return data.payload.topics.map(topic => ({
-            topicId: topic.id,
-            topicName: topic.name
-        }));
+        return data.payload.topics
+            .filter(topic => topic.contentFlag) // Only include topics with contentFlag true
+            .map(topic => ({
+                topicId: topic.id,
+                topicName: topic.name
+            }));
     } catch (error) {
         console.log(`Error fetching topics for unit ${unitId}: ${error}`);
         throw error;
     }
 }
 
-async function resultQuiz(topicId) {
+async function resultQuiz(topicId, accessToken) {
     const url = `https://api.tesseractonline.com/quizattempts/quiz-result/${topicId}`;
-
     const headers = {
-        'Authorization': ACCESS_TOKEN,
+        'Authorization': accessToken,
         'Host': 'api.tesseractonline.com',
     };
 
@@ -152,10 +147,6 @@ async function resultQuiz(topicId) {
     }
 }
 
-app.get('/', (req, res) => {
-    res.render("index.ejs");
-});
-
 app.post('/', async (req, res) => {
     const { accessToken, unitId } = req.body;
 
@@ -163,28 +154,28 @@ app.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Missing accessToken or unitId in request data.' });
     }
 
-    ACCESS_TOKEN = accessToken;
+    let logs = [];
 
     try {
         const unitIds = unitId.split(' ');
 
         for (const unit of unitIds) {
-            const topics = await getUnitTopics(unit);
+            const topics = await getUnitTopics(unit, accessToken);
 
             for (const topic of topics) {
                 console.log(`${topic.topicId}: ${topic.topicName}`);
             }
 
             for (const topic of topics) {
-                const done = await resultQuiz(topic.topicId);
+                const done = await resultQuiz(topic.topicId, accessToken);
 
                 if (done) {
                     console.log(`Quiz with id ${topic.topicId} is already done!`);
                 } else {
                     console.log(`Solving quiz ${topic.topicId}`);
-                    await attemptOneQuiz(topic.topicId);
+                    await attemptOneQuiz(topic.topicId, accessToken);
                     console.log(`Quiz ${topic.topicId} is finished.`);
-                    console.log(''); 
+                    console.log('');
                 }
             }
         }
