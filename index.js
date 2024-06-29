@@ -123,9 +123,11 @@ async function getUnitTopics(unitId) {
         const response = await axios.get(url, { headers });
         const data = response.data;
 
-        return data.payload.topics.map(topic => ({
-            topicId: topic.id,
-            topicName: topic.name
+        return data.payload.topics
+            .filter(topic => topic.contentFlag)
+            .map(topic => ({
+                topicId: topic.id,
+                topicName: topic.name
         }));
     } catch (error) {
         console.log(`Error fetching topics for unit ${unitId}: ${error}`);
