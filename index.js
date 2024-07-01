@@ -3,7 +3,6 @@ const axios = require('axios');
 const path = require("path");
 const engine = require('ejs-mate');
 
-
 const app = express();
 const port = 3000;
 
@@ -148,25 +147,31 @@ async function resultQuiz(topicId, accessToken) {
 }
 
 app.post('/', async (req, res) => {
-    const { accessToken, unitId } = req.body;
+    const { accessToken, unitId, numUnits } = req.body;
 
-    if (!accessToken || !unitId) {
-        return res.status(400).json({ error: 'Missing accessToken or unitId in request data.' });
+    if (!accessToken || !unitId || numUnits === undefined) {
+        return res.status(400).json({ error: 'Missing accessToken, unitId, or numUnits in request data.' });
     }
 
     let logs = [];
+    let topicsCount = 0; // Initialize topics counter
+    let processedTopics = 0; // Track the number of processed topics
 
     try {
         const unitIds = unitId.split(' ');
+        const numUnitsInt = parseInt(numUnits, 10); // Convert numUnits to an integer
 
         for (const unit of unitIds) {
+            if (numUnitsInt !== 0 && processedTopics >= numUnitsInt) break; // Stop processing if the limit is reached and numUnits is not 0
+
             const topics = await getUnitTopics(unit, accessToken);
+            topicsCount += topics.length; // Increment the counter by the number of topics in the current unit
 
             for (const topic of topics) {
+                if (numUnitsInt !== 0 && processedTopics >= numUnitsInt) break; // Stop processing if the limit is reached and numUnits is not 0
+
                 console.log(`${topic.topicId}: ${topic.topicName}`);
-            }
 
-            for (const topic of topics) {
                 const done = await resultQuiz(topic.topicId, accessToken);
 
                 if (done) {
@@ -176,11 +181,13 @@ app.post('/', async (req, res) => {
                     await attemptOneQuiz(topic.topicId, accessToken);
                     console.log(`Quiz ${topic.topicId} is finished.`);
                     console.log('');
+                    
+                    processedTopics += 1; // Increment the processed topics counter only for attempted quizzes
                 }
             }
         }
 
-        res.status(200).json({ logs, message: 'Processing complete' });
+        res.status(200).json({ logs, message: 'Submission complete', topicsCount }); // Include topicsCount in the response
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
